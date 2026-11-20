@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>食事ノート はじめの設定</title>
+<style>
+  :root {
+    --bg: #F5F5F0; --card: #FFFFFF; --text: #1F2328; --sub: #565E66;
+    --accent: #2F6F5E; --accent-soft: #EEF5F2; --ok: #1E6B3A; --ok-soft: #E7F4EC;
+    --ng: #B42318; --ng-soft: #FDECEA; --line: #E3E5DF;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; font-size: 18px; line-height: 1.6; }
+  main { max-width: 520px; margin: 0 auto; padding: 24px 16px 56px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { margin: 0; font-size: 26px; }
+  h2 { margin: 0; font-size: 20px; }
+  p { margin: 0; }
+  .lead { color: var(--sub); font-size: 16px; }
+  .card { background: var(--card); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; align-items: center; gap: 12px; }
+  .num { flex: 0 0 36px; height: 36px; border-radius: 18px; background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .num.done { background: var(--ok); }
+  label { font-weight: 700; font-size: 16px; display: flex; flex-direction: column; gap: 8px; }
+  input { width: 100%; font: inherit; font-size: 17px; padding: 14px; border-radius: 12px;
+    border: 1px solid #C9CDC4; background: #FAFAF7; color: var(--text); }
+  input:focus { outline: 3px solid var(--accent-soft); border-color: var(--accent); }
+  .hint { color: var(--sub); font-size: 14px; font-weight: 400; }
+  button { font: inherit; border: none; border-radius: 32px; min-height: 60px; padding: 0 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+  .primary { background: var(--accent); color: #fff; font-size: 20px; font-weight: 700; }
+  .primary:disabled { background: #A9B7B1; cursor: default; }
+  .outline { background: #fff; color: var(--accent); border: 2px solid var(--accent); font-weight: 700; font-size: 17px; min-height: 52px; }
+  .text { background: transparent; color: var(--sub); min-height: 44px; font-size: 15px; text-decoration: underline; }
+  .msg { border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+  .msg.ok { background: var(--ok-soft); color: var(--ok); }
+  .msg.ng { background: var(--ng-soft); color: var(--ng); }
+  .msg.info { background: var(--accent-soft); color: var(--accent); }
+  .share { word-break: break-all; font-size: 13px; color: var(--sub); background: var(--bg); border-radius: 10px; padding: 10px; }
+  details { background: var(--card); border-radius: 18px; padding: 16px 20px; }
+  summary { font-weight: 700; cursor: pointer; min-height: 32px; }
+  details[open] summary { margin-bottom: 12px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <h1>食事ノート はじめの設定</h1>
+    <p class="lead">最初に1回だけ行います。終わったらすぐ使えます。</p>
+  </header>
+
+  <!-- A. 家族から届いたリンクで開いたとき -->
+  <section class="card hidden" id="quick">
+    <h2>設定が届いています</h2>
+    <p>下のボタンを押すだけで準備が終わります。</p>
+    <div class="msg info hidden" id="quickMsg" role="status"></div>
+    <button class="primary" id="quickBtn" type="button">この設定で始める</button>
+    <button class="text" id="manualBtn" type="button">自分で入力する</button>
+  </section>
+
+  <!-- B. 自分で入力するとき -->
+  <section id="manual" style="display:flex;flex-direction:column;gap:16px">
+    <div class="card" id="urlCard">
+      <div class="step"><div class="num" id="n1">1</div><h2>つなぎ先を入れる</h2></div>
+      <label for="url">つなぎ先のアドレス
+        <span class="hint">「https://script.google.com/」で始まる長いアドレスです。設定してくれた人から受け取ったものを貼り付けてください。</span>
+        <input id="url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+      </label>
+    </div>
+
+    <div class="card">
+      <div class="step"><div class="num" id="n2">2</div><h2>合言葉を入れる</h2></div>
+      <label for="token">合言葉
+        <span class="hint">1人に1つずつ用意された言葉です。誰の記録かを見分けるのにも使います。</span>
+        <input id="token" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </label>
+    </div>
+
+    <div class="card">
+      <div class="step"><div class="num" id="n3">3</div><h2>つながるか確かめる</h2></div>
+      <div class="msg hidden" id="testMsg" role="status"></div>
+      <button class="outline" id="testBtn" type="button">確かめる</button>
+      <button class="primary" id="saveBtn" type="button" disabled>保存して始める</button>
+    </div>
+  </section>
+
+  <!-- C. 設定した人が家族に送る -->
+  <details id="shareBox">
+    <summary>家族に設定を送る（設定する人向け）</summary>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <p class="hint" style="font-size:15px">「合言葉」に<b>送る相手の合言葉</b>を入れてから押すと、開くだけで設定が終わるリンクを作ります。1人ずつ作って、LINEなどで送ってください。</p>
+      <button class="outline" id="makeLink" type="button">設定リンクを作る</button>
+      <div class="share hidden" id="shareUrl"></div>
+      <div class="msg hidden" id="shareMsg" role="status"></div>
+      <p class="hint" style="font-size:13px">リンクには合言葉が入っています。家族以外には送らないでください。</p>
+    </div>
+  </details>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var memory = {};
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k) || ''; } catch (e) { return memory[k] || ''; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { memory[k] = v; } }
+  };
+  // つなぎ先を開発者が入れておく場合はここに（index.html の FIXED_URL と同じ値）
+  var FIXED_URL = '';
+  var tested = false;
+  if (FIXED_URL) {
+    $('url').value = FIXED_URL;
+    $('urlCard').classList.add('hidden');
+    $('n2').textContent = '1'; $('n3').textContent = '2';
+  }
+
+  // 今の設定があれば入れておく
+  if (!FIXED_URL) $('url').value = store.get('url');
+  $('token').value = store.get('token');
+
+  // リンクの # 以降に設定が入っていれば「かんたん設定」を出す（# 以降はサーバーに送られない）
+  var shared = readHash();
+  if (shared) {
+    $('quick').classList.remove('hidden');
+    $('manual').classList.add('hidden');
+    $('shareBox').classList.add('hidden');
+  }
+
+  function readHash() {
+    if (!location.hash || location.hash.length < 2) return null;
+    var p = new URLSearchParams(location.hash.slice(1));
+    var u = FIXED_URL || p.get('u'), t = p.get('t');
+    return (u && t) ? { url: u, token: t } : null;
+  }
+
+  $('manualBtn').onclick = function () {
+    $('quick').classList.add('hidden');
+    $('manual').classList.remove('hidden');
+    $('shareBox').classList.remove('hidden');
+    if (shared) { $('url').value = shared.url; $('token').value = shared.token; }
+  };
+
+  $('quickBtn').onclick = function () {
+    var btn = $('quickBtn');
+    btn.disabled = true; btn.textContent = '確かめています…';
+    test(shared.url, shared.token).then(function (res) {
+      show($('quickMsg'), 'ok', res.user + ' さんとして準備できました');
+      setTimeout(function () { save(shared.url, shared.token); }, 1200);
+    }).catch(function (err) {
+      show($('quickMsg'), 'ng', 'つながりませんでした。設定してくれた人に連絡してください。（' + err.message + '）');
+      btn.disabled = false; btn.textContent = 'もう一度試す';
+    });
+  };
+
+  // 入力が変わったら確認をやり直す
+  ['url', 'token'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      tested = false; $('saveBtn').disabled = true;
+      $('testMsg').classList.add('hidden');
+      ['n1', 'n2', 'n3'].forEach(function (n, i) { $(n).classList.remove('done'); $(n).textContent = String(FIXED_URL ? i : i + 1); });
+    });
+  });
+
+  $('testBtn').onclick = function () {
+    var url = $('url').value.trim(), token = $('token').value.trim();
+    if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) {
+      show($('testMsg'), 'ng', 'アドレスの形が違うようです。「https://script.google.com/」で始まり「/exec」で終わるものを貼り付けてください。');
+      $('url').focus(); return;
+    }
+    if (!token) { show($('testMsg'), 'ng', '合言葉を入れてください。'); $('token').focus(); return; }
+
+    $('testBtn').disabled = true; $('testBtn').textContent = '確かめています…';
+    test(url, token).then(function (res) {
+      tested = true; $('saveBtn').disabled = false;
+      ['n1', 'n2', 'n3'].forEach(function (n) { $(n).classList.add('done'); $(n).textContent = '✓'; });
+      show($('testMsg'), 'ok', 'つながりました。' + res.user + ' さんの記録として保存されます。「保存して始める」を押してください。');
+    }).catch(function (err) {
+      var m = /合言葉/.test(err.message)
+        ? '合言葉が違うようです。もう一度確かめてください。'
+        : 'つながりませんでした。アドレスをもう一度確かめてください。';
+      show($('testMsg'), 'ng', m);
+    }).then(function () {
+      $('testBtn').disabled = false; $('testBtn').textContent = '確かめる';
+    });
+  };
+
+  $('saveBtn').onclick = function () {
+    if (!tested) return;
+    save($('url').value.trim(), $('token').value.trim());
+  };
+
+  $('makeLink').onclick = function () {
+    var url = $('url').value.trim(), token = $('token').value.trim();
+    if (!url || !token) { show($('shareMsg'), 'ng', '先に「つなぎ先」と「合言葉」を入れてください。'); return; }
+    var base = location.href.split('#')[0];
+    var params = FIXED_URL ? { t: token } : { u: url, t: token };
+    var link = base + '#' + new URLSearchParams(params).toString();
+    $('shareUrl').textContent = link;
+    $('shareUrl').classList.remove('hidden');
+    if (navigator.share) {
+      navigator.share({ title: '食事ノートの設定', text: 'このリンクを開いて「この設定で始める」を押してね', url: link })
+        .catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(function () {
+        show($('shareMsg'), 'ok', 'リンクをコピーしました。LINEなどに貼り付けて送ってください。');
+      }, function () {
+        show($('shareMsg'), 'info', '上のリンクを長押ししてコピーしてください。');
+      });
+    } else {
+      show($('shareMsg'), 'info', '上のリンクを長押ししてコピーしてください。');
+    }
+  };
+
+  // 合言葉まで確かめるため、今日の記録を読む操作で試す
+  function test(url, token) {
+    return fetch(url, { method: 'POST', body: JSON.stringify({ action: 'today', token: token }) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) { if (!res.ok) throw new Error(res.error || '失敗しました'); return res; });
+  }
+
+  function save(url, token) {
+    store.set('url', url);
+    store.set('token', token);
+    // 合言葉入りのアドレスを履歴に残さないよう、置き換えて移動する
+    location.replace('index.html');
+  }
+
+  function show(el, kind, text) {
+    el.className = 'msg ' + kind;
+    el.textContent = text;
+  }
+})();
+</script>
+</body>
+</html>
